@@ -83,6 +83,7 @@ login, and attempt to prompt you for your password.
   - Your Matrix user
   - A Matrix bot user (just a normal user with a noticeable username like `notification-bot`)
   - A private Matrix channel between you and the bot (preferably encrypted).
+  - A Matrix client app for mobile, e.g. [Element](https://element.io/)
 - A proxy server with HTTPS support (E.g. [`caddy`](https://caddyserver.com/))
 - A DNS subdomain/domain you control.
 For development contributors only:
@@ -90,6 +91,93 @@ For development contributors only:
 
 ## Installation instructions
 
-```{sh}
+Building and installing the `web-pinentry` program:
+
+```{bash}
+# Build the web-pinentry program
 cargo build
+# Copy the program to a PATH directory
+sudo cp target/debug/web-pinentry /usr/bin
 ```
+
+Install a Matrix client on your phone.  Sign up (on the default server, or your
+own self-hosted one), and log in.  Once you've done that, create a private
+channel with a name like *GPG Login Requests*.  Create another Matrix user that
+will be used as a bot account.  Again, give it a recognisable username like
+`gpg-bot`.  Logged in as your own Matrix user again, invite the bot to the private
+channel you created.  Logged in as the bot once more, accept the
+invitation.  Don't log out as the bot just yet, until the following steps have been
+completed.
+
+You should now have a properly set up Matrix user, bot user and a channel shared
+by each.  Next, install `matrix-commander-rs` on your server, which will be used
+by the bot to send messages to you:
+
+```{bash}
+git clone https://github.com/8go/matrix-commander-rs
+cd matrix-commander-rs
+cargo build
+sudo cp target/debug/matrix-commander-rs /usr/bin
+```
+
+Linking your bot to matrix-commander-rs:
+
+```{bash}
+matrix-commander-rs \
+    --login password \
+    --user-login \
+    @gpg-bot:matrix.org \
+    --password <BOT PASSWORD> \
+    --device web-pinentry \
+    --room-default '!room_id:matrix.org' `
+    --homeserver 'https://matrix.org'
+```
+
+Testing that you can receive messages from the bot:
+
+```{bash}
+matrix-commander-rs --message 'Hello world!'
+```
+
+The above should trigger a notification on your phone via the Matrix client app
+you have installed.
+
+You might notice the message come with a warning about the bot's client.
+On the app you used to login to the bot account earlier, go into settings
+and manually verify that the web-pinentry client is legitimate.  You can
+use emoji verification if you want to do this with maximal security.
+
+On your Matrix phone app or desktop client, you can now log out of the bot account.
+It will only ever communicate via messages from your server from now on.
+
+Ensure you're logged into your Matrix account on your phone app to receive security
+requests in your shared channel with the bot.
+
+Configuring `web-pinentry` as the default GNUPG pinentry program:
+
+```{bash}
+if [ ! "$GNUPGHOME" ]; then GNUPGHOME="$HOME/.gnupg"; fi
+AGENT_CONF="$GNUPGHOME/gpg-agent.conf"
+echo "pinentry-program $(which web-pinentry)" >> "$AGENT_CONF"
+```
+
+Testing that the new pinentry program is used:
+```{bash}
+# Kill the existing gpg-agent, triggering it to restart with the new settings.
+kill $(pgrep gpg-agent)
+# Run a command that requires GPG master login, e.g.:
+pass sql-root-password
+```
+
+If all goes well, the above command should hang for a while, and without much
+delay you should receive a notification on your phone from the `gpg-bot`,
+with a link to a login URL.  Click this link and allow your password
+manager to relay your GPG decryption password to the web form.
+After submitting this form, you'll notice the `pass sql-root-password`
+command is no longer hanging, and has printed the password to the console.
+You'll also notice that the previous link and its entire domain are no
+longer reachable.
+
+![Receive a notification](docs/notification.png)
+
+![Enter password](docs/web.png)
