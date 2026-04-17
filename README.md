@@ -82,7 +82,7 @@ login, and attempt to prompt you for your password.
 - [`matrix-commander-rs`](https://github.com/8go/matrix-commander-rs)
 - [Matrix](https://matrix.org/)
   - Your Matrix user
-  - A Matrix bot user (just a normal user with a noticeable username like `notification-bot`)
+  - A Matrix bot user (just a normal user with a noticeable username like `gpg-bot`)
   - A private Matrix channel between you and the bot (preferably encrypted).
   - A Matrix client app for mobile, e.g. [Element](https://element.io/)
 - A proxy server with HTTPS support (E.g. [`caddy`](https://caddyserver.com/))
@@ -91,6 +91,26 @@ For development contributors only:
 - [`rust`](https://rust-lang.org/)
 
 ## Installation instructions
+
+Configure the domain used for login links.  This should be a subdomain you
+control, e.g. `gpg.yourdomain.com`:
+
+```{bash}
+mkdir -p "$HOME/.config/web-pinentry"
+echo "gpg.yourdomain.com" >> "$HOME/.config/web-pinentry/domain"
+```
+
+Install and setup a reverse proxy with HTTPS support, e.g. `caddy`:
+
+- Install `caddy` / `nginx` / `apache` or any other reverse proxy with HTTPS support.
+- Configure the reverse proxy to forward requests from your chosen domain to
+  127.0.0.1:7563, where `web-pinentry` will be running its HTTP server.  For example, with `caddy`:
+
+```{caddyfile}
+gpg.yourdomain.com {
+  reverse_proxy 127.0.0.1:7563
+}
+```
 
 Building and installing the `web-pinentry` program:
 
@@ -140,7 +160,7 @@ Testing that you can receive messages from the bot:
 matrix-commander-rs --message 'Hello world!'
 ```
 
-The above should trigger a notification on your phone via the Matrix client app
+The above should trigger a message notification on your phone via the Matrix client app
 you have installed.
 
 You might notice the message come with a warning about the bot's client.
