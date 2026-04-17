@@ -14,14 +14,14 @@ config files poses a security threat.  Server admins may ultimately
 feel compelled to reject server access to engineers or technicians lest they
 gain knowledge of crucial passwords in config files.
 
-To solve this headache, passwords can be encrypted with a GPG wrapper tool such
-as `pass`.  Rather than pulling passwords from a file, they are obtained through
-subprocess calls, e.g.
+To solve this problem, passwords can be encrypted with a GPG wrapper tool such
+as [`pass`](https://www.passwordstore.org/).  Rather than pulling passwords from
+a file, they are obtained through subprocess calls, e.g.
 
 `pass sql-root-password`
 `pass github-token`
 
-This is standard practice on desktops, but not yet on servers.
+This is a standard practice on Linux desktops, but not yet on servers.
 
 `web-pinentry` attempts to make this workflow more feasible on servers.  Programs
 typically pause for user authentication when executing GPG or `pass` commands.  On desktop,
@@ -78,6 +78,7 @@ login, and attempt to prompt you for your password.
 
 ## Requirements
 
+- [`GnuPG`](https://www.gnupg.org/)
 - [`matrix-commander-rs`](https://github.com/8go/matrix-commander-rs)
 - [Matrix](https://matrix.org/)
   - Your Matrix user
@@ -153,7 +154,7 @@ It will only ever communicate via messages from your server from now on.
 Ensure you're logged into your Matrix account on your phone app to receive security
 requests in your shared channel with the bot.
 
-Configuring `web-pinentry` as the default GNUPG pinentry program:
+Configuring `web-pinentry` as the default GnuPG pinentry program:
 
 ```{bash}
 if [ ! "$GNUPGHOME" ]; then GNUPGHOME="$HOME/.gnupg"; fi
