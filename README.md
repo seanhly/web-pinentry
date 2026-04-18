@@ -1,5 +1,7 @@
 # `web-pinentry`: decrypt server keys from your phone
 
+![Logo](docs/icons/512x512/web-pinentry.png)
+
 `web-pinentry` is a [pinentry](https://github.com/gpg/pinentry) program for
 Linux servers, allowing you to decrypt keys on your server remotely via your
 phone.  It relies on HTTP and the Matrix protocol.  This is a modern approach to
